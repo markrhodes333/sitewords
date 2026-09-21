@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#5b4bdb">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sight Words">
+  <meta name="description" content="A kid-friendly sight word practice game with editable weekly word lists.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Sight Word Star Quest</title>
+  <style>
+    :root {
+      --ink: #26233a;
+      --muted: #6f6a84;
+      --panel: #ffffff;
+      --bg1: #f7f3ff;
+      --bg2: #eef9ff;
+      --accent: #5b4bdb;
+      --accent2: #ffb22e;
+      --good: #1c9b68;
+      --soft: #f1efff;
+      --line: #ddd8ef;
+      --danger: #b83d52;
+      --shadow: 0 12px 35px rgba(49, 40, 100, .12);
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg1); }
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    button, input, textarea, select { font: inherit; }
+    button { touch-action: manipulation; }
+    .app { width: min(760px, 100%); margin: 0 auto; padding: 18px 14px 36px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .brand { display:flex; align-items:center; gap:10px; min-width:0; }
+    .brand-badge { width:46px; height:46px; border-radius:15px; display:grid; place-items:center; background:#fff7d6; font-size:25px; box-shadow:var(--shadow); }
+    .brand h1 { font-size: clamp(20px, 5vw, 28px); line-height:1.05; margin:0; }
+    .brand p { margin:4px 0 0; color:var(--muted); font-size:13px; }
+    .icon-btn { border:1px solid var(--line); background:rgba(255,255,255,.92); color:var(--ink); min-width:46px; min-height:46px; border-radius:14px; font-weight:800; box-shadow:0 5px 16px rgba(49,40,100,.08); }
+    .card { background:rgba(255,255,255,.96); border:1px solid rgba(221,216,239,.85); border-radius:24px; padding:18px; box-shadow:var(--shadow); }
+    .hidden { display:none !important; }
+    .hero { text-align:center; padding:24px 18px; }
+    .hero .emoji { font-size:56px; line-height:1; }
+    .hero h2 { font-size:28px; margin:10px 0 8px; }
+    .hero p { margin:0 auto; max-width:540px; color:var(--muted); }
+    .active-pack { margin:18px 0 14px; padding:13px 14px; border:1px solid var(--line); background:var(--soft); border-radius:16px; text-align:left; }
+    .active-pack strong { display:block; font-size:14px; color:var(--muted); margin-bottom:4px; }
+    .active-pack span { font-size:18px; font-weight:800; }
+    .actions { display:grid; grid-template-columns:1fr; gap:11px; margin-top:16px; }
+    .btn { border:0; border-radius:16px; min-height:54px; padding:12px 17px; font-weight:850; cursor:pointer; transition:transform .08s ease, opacity .15s ease; }
+    .btn:active { transform:scale(.98); }
+    .btn:disabled { opacity:.48; cursor:not-allowed; transform:none; }
+    .btn-primary { color:white; background:var(--accent); }
+    .btn-secondary { color:var(--ink); background:#fff; border:1px solid var(--line); }
+    .btn-good { color:white; background:var(--good); }
+    .btn-warm { color:#3e2c00; background:#ffd96e; }
+    .btn-danger { color:white; background:var(--danger); }
+    .stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:16px; }
+    .stat { background:#fff; border:1px solid var(--line); border-radius:15px; padding:10px 8px; text-align:center; }
+    .stat b { display:block; font-size:19px; }
+    .stat span { color:var(--muted); font-size:12px; }
+    .section-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+    .section-title h2 { margin:0; font-size:22px; }
+    .small { font-size:13px; color:var(--muted); }
+    .field { margin:14px 0; }
+    label { display:block; font-weight:800; margin-bottom:7px; }
+    input, textarea, select { width:100%; border:1px solid var(--line); border-radius:14px; background:white; color:var(--ink); padding:13px; font-size:16px; outline:none; }
+    textarea { min-height:175px; resize:vertical; line-height:1.45; }
+    input:focus, textarea:focus, select:focus, button:focus-visible { border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,75,219,.16); outline:none; }
+    .row { display:grid; grid-template-columns:1fr; gap:10px; }
+    .pack-list { display:grid; gap:10px; margin-top:14px; }
+    .pack-item { border:1px solid var(--line); border-radius:16px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .pack-info { min-width:0; }
+    .pack-info b { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .pack-info span { color:var(--muted); font-size:12px; }
+    .pack-actions { display:flex; gap:6px; flex-shrink:0; }
+    .mini-btn { border:1px solid var(--line); background:white; border-radius:10px; min-height:38px; padding:8px 10px; font-weight:800; }
+    .mini-btn.active { background:var(--soft); border-color:var(--accent); color:var(--accent); }
+    .notice { background:#fff9df; border:1px solid #efd985; border-radius:14px; padding:11px 12px; font-size:13px; color:#66511f; margin:12px 0; }
+    .game-shell { text-align:center; }
+    .game-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+    .game-head .pill { border:1px solid var(--line); background:white; border-radius:999px; padding:8px 12px; font-weight:850; font-size:14px; }
+    .progress { height:12px; border-radius:999px; overflow:hidden; background:#eae7f5; margin:4px 0 18px; }
+    .progress > div { height:100%; width:0; background:var(--accent); border-radius:inherit; transition:width .25s ease; }
+    .word-label { color:var(--muted); font-weight:850; letter-spacing:.08em; font-size:12px; }
+    .word-card { min-height:230px; display:grid; place-items:center; margin:10px 0 18px; border:2px solid var(--line); border-radius:28px; background:linear-gradient(145deg,#ffffff,#f6f4ff); font-size:clamp(64px,18vw,116px); line-height:1; font-weight:900; padding:20px; overflow-wrap:anywhere; }
+    .game-buttons { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .game-buttons .wide { grid-column:1 / -1; }
+    .feedback { min-height:34px; display:grid; place-items:center; margin:12px 0 0; font-weight:850; }
+    .finish-stars { font-size:54px; letter-spacing:3px; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:12px; }
+    .chip { background:white; border:1px solid var(--line); border-radius:999px; padding:8px 12px; font-weight:850; }
+    .modal-backdrop { position:fixed; inset:0; display:grid; place-items:center; padding:16px; background:rgba(25,20,47,.48); z-index:50; }
+    .modal { width:min(420px,100%); background:white; border-radius:22px; padding:19px; box-shadow:0 24px 70px rgba(19,13,56,.3); }
+    .modal h3 { margin:0 0 7px; }
+    .modal p { margin:0 0 12px; color:var(--muted); }
+    .modal-actions { display:flex; gap:9px; margin-top:12px; }
+    .modal-actions .btn { flex:1; min-height:48px; }
+    .install-tip { margin-top:14px; border-top:1px solid var(--line); padding-top:14px; }
+    .footer { text-align:center; color:var(--muted); font-size:12px; margin-top:18px; }
+    .toast { position:fixed; left:50%; bottom:20px; transform:translateX(-50%); width:min(92%,480px); background:#27213f; color:white; border-radius:14px; padding:12px 14px; text-align:center; font-weight:750; z-index:70; box-shadow:0 15px 40px rgba(20,15,40,.3); }
+    @media (min-width: 620px) {
+      .app { padding-top:28px; }
+      .card { padding:24px; }
+      .actions { grid-template-columns:1fr 1fr; }
+      .actions .wide { grid-column:1 / -1; }
+      .row.two { grid-template-columns:1fr 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior:auto !important; transition:none !important; animation:none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge" aria-hidden="true">⭐</div>
+        <div>
+          <h1>Sight Word Star Quest</h1>
+          <p>Read it. Say it. Earn a star!</p>
+        </div>
+      </div>
+      <button id="parentButton" class="icon-btn" type="button" aria-label="Open parent setup">⚙️</button>
+    </header>
+
+    <section id="homeScreen" class="card hero">
+      <div class="emoji" aria-hidden="true">🚀</div>
+      <h2>Ready to read?</h2>
+      <p>Say each word out loud. Tap <b>I Got It!</b> when you know it, or <b>Practice Again</b> when you want to see it again.</p>
+      <div class="active-pack">
+        <strong>THIS WEEK'S WORDS</strong>
+        <span id="activePackName">Friday Sight Words</span>
+        <div id="activePackCount" class="small">21 words</div>
+      </div>
+      <div class="actions">
+        <button id="play10" class="btn btn-primary" type="button">⭐ Play 10 Words</button>
+        <button id="playAll" class="btn btn-secondary" type="button">📚 Play All Words</button>
+        <button id="playMissed" class="btn btn-warm wide" type="button">🔁 Practice Missed Words</button>
+      </div>
+      <div class="stat-row" aria-label="Practice stats">
+        <div class="stat"><b id="statStars">0</b><span>Total stars</span></div>
+        <div class="stat"><b id="statPracticed">0</b><span>Read today</span></div>
+        <div class="stat"><b id="statMissed">0</b><span>To practice</span></div>
+      </div>
+      <div class="install-tip">
+        <button id="installButton" class="btn btn-secondary hidden" type="button">📲 Install on this phone</button>
+        <div id="installHint" class="small">On Android Chrome: open the browser menu and choose <b>Install app</b> or <b>Add to Home screen</b>.</div>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="card game-shell hidden" aria-live="polite">
+      <div class="game-head">
+        <button id="quitGame" class="mini-btn" type="button">← Home</button>
+        <div class="pill">⭐ <span id="gameStars">0</span></div>
+        <div class="pill"><span id="gameRound">1</span>/<span id="gameTotal">10</span></div>
+      </div>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div class="word-label">READ THIS WORD</div>
+      <div id="wordCard" class="word-card">a</div>
+      <div class="small">Say it out loud before tapping a button.</div>
+      <div class="game-buttons" style="margin-top:14px">
+        <button id="gotIt" class="btn btn-good" type="button">⭐ I Got It!</button>
+        <button id="practiceAgain" class="btn btn-warm" type="button">🔁 Practice Again</button>
+        <button id="hearWord" class="btn btn-secondary wide" type="button">🔊 Hear the Word</button>
+      </div>
+      <div id="feedback" class="feedback"></div>
+    </section>
+
+    <section id="finishScreen" class="card hero hidden">
+      <div class="finish-stars" aria-hidden="true">🏆⭐</div>
+      <h2>Great reading!</h2>
+      <p id="finishSummary"></p>
+      <div id="finishReviewArea" class="hidden">
+        <p style="margin-top:18px"><b>Let's practice these again:</b></p>
+        <div id="finishReviewWords" class="chips"></div>
+      </div>
+      <div class="actions">
+        <button id="playAgain" class="btn btn-primary" type="button">🚀 Play Again</button>
+        <button id="finishHome" class="btn btn-secondary" type="button">🏠 Home</button>
+      </div>
+    </section>
+
+    <section id="parentScreen" class="card hidden">
+      <div class="section-title">
+        <div>
+          <h2>Parent Setup</h2>
+          <div class="small">Change the sight words anytime.</div>
+        </div>
+        <button id="closeParent" class="mini-btn" type="button">Done</button>
+      </div>
+
+      <div class="notice">The words and progress are stored only on this device. No account or internet connection is needed after the app is installed.</div>
+
+      <div class="field">
+        <label for="packName">List name</label>
+        <input id="packName" type="text" maxlength="60" placeholder="Example: Week of Sept. 21">
+      </div>
+      <div class="field">
+        <label for="wordInput">Sight words</label>
+        <textarea id="wordInput" spellcheck="false" autocapitalize="off" placeholder="Paste words here. You can use one word per line or separate them with commas."></textarea>
+        <div id="wordCount" class="small" style="margin-top:6px">0 words</div>
+      </div>
+      <div class="row two">
+        <button id="savePack" class="btn btn-primary" type="button">💾 Save as New List</button>
+        <button id="updatePack" class="btn btn-secondary" type="button">✏️ Update Active List</button>
+      </div>
+
+      <div style="margin-top:24px">
+        <div class="section-title">
+          <h2 style="font-size:18px">Saved weekly lists</h2>
+        </div>
+        <div id="packList" class="pack-list"></div>
+      </div>
+
+      <div style="margin-top:24px">
+        <div class="section-title"><h2 style="font-size:18px">Parent PIN</h2></div>
+        <div class="small">The default PIN is <b>2468</b>. Change it here if you want.</div>
+        <div class="row two" style="margin-top:10px">
+          <input id="newPin" type="password" inputmode="numeric" maxlength="6" placeholder="New 4-6 digit PIN">
+          <button id="changePin" class="btn btn-secondary" type="button">Change PIN</button>
+        </div>
+      </div>
+
+      <div style="margin-top:24px">
+        <button id="resetProgress" class="btn btn-danger" type="button" style="width:100%">Reset Practice Progress</button>
+      </div>
+    </section>
+
+    <div class="footer">Sight Word Star Quest • Works offline after installation</div>
+  </main>
+
+  <div id="pinModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+    <div class="modal">
+      <h3 id="pinTitle">Parent check</h3>
+      <p>Enter the parent PIN to change the word list.</p>
+      <input id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="PIN" aria-label="Parent PIN">
+      <div id="pinError" class="small" style="color:var(--danger); min-height:20px; margin-top:6px"></div>
+      <div class="modal-actions">
+        <button id="cancelPin" class="btn btn-secondary" type="button">Cancel</button>
+        <button id="submitPin" class="btn btn-primary" type="button">Open</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="modal">
+      <h3 id="confirmTitle">Are you sure?</h3>
+      <p id="confirmText"></p>
+      <div class="modal-actions">
+        <button id="cancelConfirm" class="btn btn-secondary" type="button">Cancel</button>
+        <button id="okConfirm" class="btn btn-danger" type="button">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script>
+  (() => {
+    'use strict';
+    const DEFAULT_WORDS = ['a','I','so','no','of','is','to','all','some','from','word','are','have','were','one','once','who','two','do','said','says'];
+    const STORAGE_KEY = 'sightWordStarQuest_v1';
+    const todayKey = () => new Date().toISOString().slice(0, 10);
+
+    const defaultState = () => ({
+      pin: '2468',
+      activePackId: 'starter',
+      packs: [{ id:'starter', name:'Friday Sight Words', words:DEFAULT_WORDS, createdAt:Date.now() }],
+      progress: { stars:0, dailyDate:todayKey(), dailyPracticed:0, missed:{}, seen:{} }
+    });
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.packs) || !parsed.packs.length) return defaultState();
+        parsed.pin = String(parsed.pin || '2468');
+        parsed.progress = parsed.progress || {};
+        parsed.progress.stars = Number(parsed.progress.stars || 0);
+        parsed.progress.dailyDate = parsed.progress.dailyDate || todayKey();
+        parsed.progress.dailyPracticed = Number(parsed.progress.dailyPracticed || 0);
+        parsed.progress.missed = parsed.progress.missed || {};
+        parsed.progress.seen = parsed.progress.seen || {};
+        if (parsed.progress.dailyDate !== todayKey()) {
+          parsed.progress.dailyDate = todayKey();
+          parsed.progress.dailyPracticed = 0;
+        }
+        if (!parsed.packs.some(p => p.id === parsed.activePackId)) parsed.activePackId = parsed.packs[0].id;
+        return parsed;
+      } catch (_) { return defaultState(); }
+    }
+
+    let state = loadState();
+    let session = null;
+    let deferredInstallPrompt = null;
+    let confirmAction = null;
+
+    const $ = (id) => document.getElementById(id);
+    const screens = ['homeScreen','gameScreen','finishScreen','parentScreen'];
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderHome();
+    }
+
+    function activePack() {
+      return state.packs.find(p => p.id === state.activePackId) || state.packs[0];
+    }
+
+    function showScreen(id) {
+      screens.forEach(s => $(s).classList.toggle('hidden', s !== id));
+      window.scrollTo({ top:0, behavior:'smooth' });
+    }
+
+    function toast(message) {
+      const el = $('toast');
+      el.textContent = message;
+      el.classList.remove('hidden');
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => el.classList.add('hidden'), 2200);
+    }
+
+    function parseWords(text) {
+      const words = text.split(/[\n,;]+/).map(w => w.trim()).filter(Boolean);
+      const seen = new Set();
+      return words.filter(w => {
+        const key = w.toLocaleLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).slice(0, 150);
+    }
+
+    function wordKey(packId, word) { return packId + '::' + word.toLocaleLowerCase(); }
+
+    function missedWordsForActivePack() {
+      const pack = activePack();
+      return pack.words.filter(w => Number(state.progress.missed[wordKey(pack.id, w)] || 0) > 0);
+    }
+
+    function renderHome() {
+      const pack = activePack();
+      $('activePackName').textContent = pack.name;
+      $('activePackCount').textContent = pack.words.length + (pack.words.length === 1 ? ' word' : ' words');
+      $('statStars').textContent = state.progress.stars;
+      $('statPracticed').textContent = state.progress.dailyPracticed;
+      const missed = missedWordsForActivePack();
+      $('statMissed').textContent = missed.length;
+      $('playMissed').disabled = missed.length === 0;
+      $('play10').disabled = pack.words.length === 0;
+      $('playAll').disabled = pack.words.length === 0;
+    }
+
+    function shuffle(list) {
+      const a = [...list];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function startGame(mode) {
+      const pack = activePack();
+      let words = [];
+      if (mode === 'missed') words = missedWordsForActivePack();
+      else if (mode === 'ten') words = shuffle(pack.words).slice(0, Math.min(10, pack.words.length));
+      else words = shuffle(pack.words);
+      if (!words.length) { toast(mode === 'missed' ? 'No missed words yet — great job!' : 'Add some sight words first.'); return; }
+      if (mode === 'missed') words = shuffle(words);
+      session = { mode, words, index:0, stars:0, review:[] };
+      $('gameTotal').textContent = words.length;
+      $('gameStars').textContent = '0';
+      $('feedback').textContent = '';
+      showScreen('gameScreen');
+      renderWord();
+    }
+
+    function renderWord() {
+      if (!session || session.index >= session.words.length) { finishGame(); return; }
+      $('wordCard').textContent = session.words[session.index];
+      $('gameRound').textContent = session.index + 1;
+      $('gameTotal').textContent = session.words.length;
+      $('gameStars').textContent = session.stars;
+      $('progressBar').style.width = ((session.index / session.words.length) * 100) + '%';
+      $('feedback').textContent = '';
+      $('gotIt').disabled = false;
+      $('practiceAgain').disabled = false;
+      $('hearWord').disabled = false;
+    }
+
+    function advanceAfter(ms) {
+      $('gotIt').disabled = true;
+      $('practiceAgain').disabled = true;
+      $('hearWord').disabled = true;
+      setTimeout(() => { session.index += 1; renderWord(); }, ms);
+    }
+
+    function markGotIt() {
+      if (!session) return;
+      const pack = activePack();
+      const word = session.words[session.index];
+      const key = wordKey(pack.id, word);
+      session.stars += 1;
+      state.progress.stars += 1;
+      state.progress.dailyPracticed += 1;
+      state.progress.seen[key] = Number(state.progress.seen[key] || 0) + 1;
+      if (state.progress.missed[key]) state.progress.missed[key] = Math.max(0, state.progress.missed[key] - 1);
+      $('gameStars').textContent = session.stars;
+      $('feedback').textContent = ['Awesome! ⭐','Great reading! 🌟','You got it! 🎉','Super reader! 🚀'][Math.floor(Math.random()*4)];
+      playDing();
+      saveState();
+      advanceAfter(520);
+    }
+
+    function markPractice() {
+      if (!session) return;
+      const pack = activePack();
+      const word = session.words[session.index];
+      const key = wordKey(pack.id, word);
+      state.progress.dailyPracticed += 1;
+      state.progress.seen[key] = Number(state.progress.seen[key] || 0) + 1;
+      state.progress.missed[key] = Number(state.progress.missed[key] || 0) + 1;
+      if (!session.review.includes(word)) session.review.push(word);
+      $('feedback').textContent = 'Good choice — we’ll practice it again! 💪';
+      saveState();
+      advanceAfter(650);
+    }
+
+    function speakCurrentWord() {
+      if (!session) return;
+      const word = session.words[session.index];
+      if (!('speechSynthesis' in window)) { toast('Speech is not available in this browser.'); return; }
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(word);
+      u.rate = 0.72;
+      u.pitch = 1.05;
+      u.volume = 1;
+      speechSynthesis.speak(u);
+      $('feedback').textContent = 'Listen, then say it out loud. 🔊';
+    }
+
+    function playDing() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(660, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + .12);
+        gain.gain.setValueAtTime(.001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.12, ctx.currentTime + .02);
+        gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .18);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + .2);
+        setTimeout(() => ctx.close(), 300);
+      } catch (_) {}
+    }
+
+    function finishGame() {
+      if (!session) { showScreen('homeScreen'); return; }
+      $('progressBar').style.width = '100%';
+      $('finishSummary').textContent = `You earned ${session.stars} star${session.stars === 1 ? '' : 's'} out of ${session.words.length}!`;
+      const area = $('finishReviewArea');
+      const chips = $('finishReviewWords');
+      chips.innerHTML = '';
+      if (session.review.length) {
+        session.review.forEach(w => {
+          const el = document.createElement('span');
+          el.className = 'chip'; el.textContent = w; chips.appendChild(el);
+        });
+        area.classList.remove('hidden');
+      } else area.classList.add('hidden');
+      showScreen('finishScreen');
+      saveState();
+    }
+
+    function openPinModal() {
+      $('pinInput').value = '';
+      $('pinError').textContent = '';
+      $('pinModal').classList.remove('hidden');
+      setTimeout(() => $('pinInput').focus(), 50);
+    }
+
+    function closePinModal() { $('pinModal').classList.add('hidden'); }
+
+    function submitPin() {
+      if ($('pinInput').value === state.pin) {
+        closePinModal();
+        renderParent();
+        showScreen('parentScreen');
+      } else {
+        $('pinError').textContent = 'That PIN does not match.';
+        $('pinInput').select();
+      }
+    }
+
+    function renderParent() {
+      const pack = activePack();
+      $('packName').value = pack.name;
+      $('wordInput').value = pack.words.join('\n');
+      updateWordCount();
+      renderPackList();
+    }
+
+    function updateWordCount() {
+      const count = parseWords($('wordInput').value).length;
+      $('wordCount').textContent = count + (count === 1 ? ' word' : ' words');
+    }
+
+    function makeId() { return 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7); }
+
+    function validatePackForm() {
+      const name = $('packName').value.trim() || 'Sight Words';
+      const words = parseWords($('wordInput').value);
+      if (!words.length) { toast('Add at least one sight word.'); return null; }
+      return { name, words };
+    }
+
+    function saveNewPack() {
+      const data = validatePackForm(); if (!data) return;
+      const pack = { id:makeId(), name:data.name, words:data.words, createdAt:Date.now() };
+      state.packs.unshift(pack);
+      state.activePackId = pack.id;
+      saveState(); renderParent();
+      toast('New weekly list saved and activated.');
+    }
+
+    function updateActivePack() {
+      const data = validatePackForm(); if (!data) return;
+      const pack = activePack();
+      pack.name = data.name; pack.words = data.words;
+      saveState(); renderParent();
+      toast('Active list updated.');
+    }
+
+    function renderPackList() {
+      const list = $('packList');
+      list.innerHTML = '';
+      state.packs.forEach(pack => {
+        const item = document.createElement('div'); item.className = 'pack-item';
+        const info = document.createElement('div'); info.className = 'pack-info';
+        const title = document.createElement('b'); title.textContent = pack.name;
+        const meta = document.createElement('span'); meta.textContent = pack.words.length + (pack.words.length === 1 ? ' word' : ' words');
+        info.append(title, meta);
+        const actions = document.createElement('div'); actions.className = 'pack-actions';
+        const use = document.createElement('button'); use.type='button'; use.className='mini-btn' + (pack.id === state.activePackId ? ' active' : ''); use.textContent = pack.id === state.activePackId ? 'Active' : 'Use';
+        use.addEventListener('click', () => {
+          state.activePackId = pack.id; saveState(); renderParent(); toast('List activated.');
+        });
+        const del = document.createElement('button'); del.type='button'; del.className='mini-btn'; del.textContent='Delete'; del.disabled = state.packs.length <= 1;
+        del.addEventListener('click', () => {
+          askConfirm(`Delete “${pack.name}”?`, () => deletePack(pack.id));
+        });
+        actions.append(use, del); item.append(info, actions); list.appendChild(item);
+      });
+    }
+
+    function deletePack(id) {
+      if (state.packs.length <= 1) return;
+      state.packs = state.packs.filter(p => p.id !== id);
+      if (state.activePackId === id) state.activePackId = state.packs[0].id;
+      saveState(); renderParent(); toast('List deleted.');
+    }
+
+    function askConfirm(text, action) {
+      confirmAction = action;
+      $('confirmText').textContent = text;
+      $('confirmModal').classList.remove('hidden');
+    }
+
+    function closeConfirm() { confirmAction = null; $('confirmModal').classList.add('hidden'); }
+
+    function changePin() {
+      const pin = $('newPin').value.trim();
+      if (!/^\d{4,6}$/.test(pin)) { toast('PIN must be 4 to 6 numbers.'); return; }
+      state.pin = pin; $('newPin').value = ''; saveState(); toast('Parent PIN changed.');
+    }
+
+    function resetProgress() {
+      askConfirm('Reset all stars, missed words, and practice counts?', () => {
+        state.progress = { stars:0, dailyDate:todayKey(), dailyPracticed:0, missed:{}, seen:{} };
+        saveState(); renderParent(); toast('Practice progress reset.');
+      });
+    }
+
+    $('play10').addEventListener('click', () => startGame('ten'));
+    $('playAll').addEventListener('click', () => startGame('all'));
+    $('playMissed').addEventListener('click', () => startGame('missed'));
+    $('gotIt').addEventListener('click', markGotIt);
+    $('practiceAgain').addEventListener('click', markPractice);
+    $('hearWord').addEventListener('click', speakCurrentWord);
+    $('quitGame').addEventListener('click', () => { session = null; showScreen('homeScreen'); renderHome(); });
+    $('playAgain').addEventListener('click', () => startGame(session && session.mode ? session.mode : 'ten'));
+    $('finishHome').addEventListener('click', () => { session = null; showScreen('homeScreen'); renderHome(); });
+    $('parentButton').addEventListener('click', openPinModal);
+    $('cancelPin').addEventListener('click', closePinModal);
+    $('submitPin').addEventListener('click', submitPin);
+    $('pinInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitPin(); });
+    $('closeParent').addEventListener('click', () => { showScreen('homeScreen'); renderHome(); });
+    $('wordInput').addEventListener('input', updateWordCount);
+    $('savePack').addEventListener('click', saveNewPack);
+    $('updatePack').addEventListener('click', updateActivePack);
+    $('changePin').addEventListener('click', changePin);
+    $('resetProgress').addEventListener('click', resetProgress);
+    $('cancelConfirm').addEventListener('click', closeConfirm);
+    $('okConfirm').addEventListener('click', () => { const fn = confirmAction; closeConfirm(); if (fn) fn(); });
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault(); deferredInstallPrompt = e; $('installButton').classList.remove('hidden'); $('installHint').classList.add('hidden');
+    });
+    $('installButton').addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      try { await deferredInstallPrompt.userChoice; } catch (_) {}
+      deferredInstallPrompt = null; $('installButton').classList.add('hidden');
+    });
+    window.addEventListener('appinstalled', () => toast('Installed! You can open it from your home screen.'));
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+    }
+
+    renderHome();
+  })();
+  </script>
+</body>
+</html>
