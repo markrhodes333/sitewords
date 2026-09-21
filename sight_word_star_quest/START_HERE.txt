@@ -1,0 +1,9 @@
+SIGHT WORD STAR QUEST - START HERE
+
+1. Unzip this package on a computer.
+2. Upload the entire folder to any HTTPS static website host.
+3. Open the resulting website in Chrome on your Android phone.
+4. Choose Install app or Add to Home screen.
+5. Parent Setup PIN: 2468
+
+The README.md file contains full instructions.
